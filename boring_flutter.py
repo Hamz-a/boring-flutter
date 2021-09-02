@@ -62,10 +62,11 @@ address = '0x' + fcn_addr.split('.')[1].strip()
 
 print('🔥 Found ssl_crypto_x509_session_verify_cert_chain @ {} (afi.)...'.format(address))
 
-
 with open('template_frida_hook.js') as f:
     template = f.read()
 
-print('🔥 Happy MITM!!! ({}s)'.format(time.time() - start_time))
-print('-' * 50)
-print(template.replace('0x00000000', address))
+output_script = 'frida_libflutter_{}.js'.format(time.strftime("%Y.%m.%d_%H.%M.%S"))
+with open(output_script, 'w') as f:
+    f.write(template.replace('0x00000000', address))
+
+print('🔥 Wrote script to {} \nHappy MITM !!! (exec time: {}s)'.format(output_script, time.time() - start_time))
