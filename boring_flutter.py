@@ -37,8 +37,8 @@ if info['bin']['bits'] != 64:
 print('🔥 Performing Advanced analysis (aaaa)...')
 r.cmd('aaaa')
 
-print('🔥 Searching for instructions with scalar value (/ae {},)...'.format(search_scalar))
-search = r.cmd('/ae {},'.format(search_scalar))
+print('🔥 Searching for instructions with scalar value (/ai {})...'.format(search_scalar))
+search = r.cmd('/ai {},'.format(search_scalar))
 
 target = ''
 for hit in search.splitlines():
