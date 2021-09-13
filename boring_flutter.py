@@ -37,22 +37,35 @@ if info['bin']['bits'] != 64:
 print('🔥 Performing Advanced analysis (aaaa)...')
 r.cmd('aaaa')
 
-print('🔥 Searching for instructions with scalar value (/ai {})...'.format(search_scalar))
-search = r.cmd('/ai {},'.format(search_scalar))
+print('🔥 Searching for instructions with scalar value (/aij {})...'.format(search_scalar))
+search = r.cmdj('/aij {},'.format(search_scalar))
 
-target = ''
-for hit in search.splitlines():
-    if hit.startswith('0x005') and 'mov' in hit:
-        target = hit.split(' ')[0]
-        print('\033[31m{}\033[0m'.format(hit))
+mov_instructions = []
+for hit in search:
+    if hit['code'].startswith('mov '):
+        print('\033[31m{} {}\033[0m'.format(hex(hit['offset']), hit['code']))
+        mov_instructions.append(hit)
     else:
-        print(hit)
+        print('{} {}'.format(hex(hit['offset']), hit['code']))
+
+if not mov_instructions:
+    print('Could not find an instruction with {} scalar value...'.format(search_scalar))
+    exit(0)
+
+print('🔥 Performing simple instruction matching to find ssl_crypto_x509_session_verify_cert_chain()...')
+target = ''
+for mov_instruction in mov_instructions:
+    instructions = r.cmdj('pdj 3 @{}'.format(mov_instruction['offset']))
+    if len(instructions) == 3 and instructions[1]['disasm'].startswith('bl ') and instructions[2]['disasm'].startswith('mov '):
+        print('✅  {} {} (match)'.format(hex(mov_instruction['offset']), mov_instruction['code']))
+        target = hex(mov_instruction['offset'])
+        break
+    else:
+        print('❌  {} {} (no match)'.format(hex(mov_instruction['offset']), mov_instruction['code']))
 
 if not target:
-    print('Could not find a mov instruction with {} scalar value, in 0x005 region...'.format(search_scalar))
+    print('Could not find a matching function ...')
     exit(0)
-else:
-    print('Found "{}", a mov instruction with {} scalar value, in 0x005 region...'.format(target, search_scalar))
 
 print('🔥 Seeking to target (s {})...'.format(target))
 r.cmd('s {}'.format(target))
