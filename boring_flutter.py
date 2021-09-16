@@ -84,7 +84,8 @@ def perform_64bits_analysis(r2):
 
 
 def perform_32bits_analysis(r2):
-    pass
+    print('❌  to be implemented...')
+    exit(0)
 
 
 def save_to_frida_script(address):
