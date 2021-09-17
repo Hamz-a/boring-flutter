@@ -3,6 +3,8 @@ import time
 import sys
 import os
 
+search_scalar = '0x186'  # TODO: currently HARD CODED, add argument parameter
+
 
 def argument_parsing():
     if len(sys.argv) < 2:
@@ -38,8 +40,6 @@ def arch_parsing(r2):
 
 
 def perform_64bits_analysis(r2):
-    search_scalar = '0x186'  # TODO: currently HARD CODED, add argument parameter
-
     print('🔥 Performing Advanced analysis (aaaa)...')
     r2.cmd('aaaa')
 
