@@ -84,8 +84,48 @@ def perform_64bits_analysis(r2):
 
 
 def perform_32bits_analysis(r2):
-    print('❌  to be implemented...')
-    exit(0)
+    print('🔥 Performing analysis (aaa)...')
+    r2.cmd('aaa')
+
+    print('🔥 Searching for instructions with scalar value (/aij {})...'.format(search_scalar))
+    search = r2.cmdj('/aij {},'.format(search_scalar))
+
+    mov_instructions = []
+    for hit in search:
+        if hit['code'].startswith('mov'):
+            print('\033[31m{} {}\033[0m'.format(hex(hit['offset']), hit['code']))
+            mov_instructions.append(hit)
+        else:
+            print('{} {}'.format(hex(hit['offset']), hit['code']))
+
+    if not mov_instructions:
+        print('❌  Could not find an instruction with {} scalar value...'.format(search_scalar))
+        exit(0)
+
+    print('🔥 Performing simple instruction matching to find ssl_crypto_x509_session_verify_cert_chain()...')
+    target = ''
+    for mov_instruction in mov_instructions:
+        print('🔥 Find prelude for current offset @ {}'.format(hex(mov_instruction['offset'])))
+        r2.cmd('s {}'.format(mov_instruction['offset']))
+
+        prelude = r2.cmd('ap').splitlines()[-1]
+        print('🔥 Pattern matching on prelude @ {}'.format(prelude))
+        instructions = r2.cmdj('pdj 5 @{}'.format(prelude))
+        if len(instructions) == 5 and instructions[0]['type'] == 'push' and instructions[1]['type'] == 'sub'\
+                and instructions[2]['type'] == 'mov' and instructions[3]['type'] == 'mov'\
+                and instructions[3]['val'] == 0x50 and instructions[4]['type'] == 'store':
+            print('✅  scalar offset @ {} -> prelude offset @ {} (match)'.format(mov_instruction['offset'], prelude))
+            target = prelude
+            break
+        else:
+            print('❌  scalar offset @ {} -> prelude offset @ {} (no match)'.format(mov_instruction['offset'], prelude))
+
+    if not target:
+        print('❌  Could not find a matching function ...')
+        exit(0)
+
+    print('🔥 Found ssl_crypto_x509_session_verify_cert_chain @ {} ...'.format(target))
+    return target
 
 
 def save_to_frida_script(address):
@@ -115,4 +155,4 @@ if __name__ == "__main__":
         exit(-1)
 
     save_to_frida_script(address)
-    print('🚀 exec time: {}s)'.format(time.time() - start_time))
+    print('🚀 exec time: {}s'.format(time.time() - start_time))
