@@ -125,7 +125,7 @@ def perform_32bits_analysis(r2):
         exit(0)
 
     print('🔥 Found ssl_crypto_x509_session_verify_cert_chain @ {} ...'.format(target))
-    return target
+    return hex(int(target, 16) + 1)  # Off by one because it's a THUMB function
 
 
 def save_to_frida_script(address):
