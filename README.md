@@ -1,5 +1,8 @@
 # boring-flutter
 
+![preview](preview.png?raw=true)
+
+
 A Python r2pipe script to automatically create a Frida hook to intercept TLS traffic for Flutter based apps. Currently only supporting Android 64 & 32bits.
 
 Inspired by the following blogposts;
